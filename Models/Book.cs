@@ -12,7 +12,7 @@ namespace Library.Models
 
         // Relacionamentos:
 
-        public int AuthorId { get; set; }
+        public int? AuthorId { get; set; }
 
         public Author Author { get; set; } // Um livro tem um autor ( 1:N )
 
