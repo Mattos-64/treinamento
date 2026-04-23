@@ -32,7 +32,7 @@ Como rodar o projeto:
 
 1. Clonar o repositório:
 
-- Colar o Link do GitHub aqui...
+- https://github.com/Mattos-64/treinamento
 
 2. Configurar o banco de dados:
 
