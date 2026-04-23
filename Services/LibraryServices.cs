@@ -1,6 +1,7 @@
 using Library.Data;
 using Library.Models;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 
 namespace Library.Services
 {
@@ -275,5 +276,159 @@ namespace Library.Services
             }
         }
 
+        public void ExibirDashboard()
+        {
+            Console.WriteLine(" === 📊 Dashboard Estatístico da Biblioteca ===== ");
+
+            // total de acervo
+            var totalLivros = _context.Books.Count();
+            var totalAutores = _context.Authors.Count();
+
+            // Autor com mais livros no sistema
+            var autorDestaque = _context.Authors
+                .Select(a => new { a.Name, QtdLivros = a.Books.Count })
+                .OrderByDescending(x => x.QtdLivros)
+                .FirstOrDefault();
+
+            // Categoria mais usada
+            var categoriaPopular = _context.Categories
+                .Select(c => new {c.Name, QtdLivros = c.Books.Count } )
+                .OrderByDescending(x => x.QtdLivros)
+                .FirstOrDefault();
+
+
+            //Exibindo os dados
+            Console.WriteLine($" \n Geral ");
+            Console.WriteLine($" [Total de Livros Cadastrados]: {totalLivros} ");
+            Console.WriteLine($" [Total de Autores Parceiros]: {totalAutores} ");
+
+            Console.WriteLine($" \n Destaques ");
+
+            if (autorDestaque != null && autorDestaque.QtdLivros > 0)
+                Console.WriteLine($" Autor com mais acervo: {autorDestaque.Name} ({autorDestaque.QtdLivros} livros.)");
+
+            if (categoriaPopular != null && categoriaPopular.QtdLivros > 0)
+                Console.WriteLine($" Categoria mais presente: {categoriaPopular.Name} ({categoriaPopular.QtdLivros} livros.)");
+
+            // Curiosidade: Livros recentes (últimos 3 cadastrados)
+            var recentes = _context.Books.OrderByDescending(b => b.Id).Take(3).ToList();
+            Console.WriteLine("\n Últimos lançamentos.");
+            recentes.ForEach(b => Console.WriteLine($"{b.Title}"));
+        }
+
+        public void BuscarLivroPorTermo(string termo)
+        {
+            var livros = _context.Books
+                .Where(b => b.Title.ToLower().Contains(termo.ToLower()))
+                .ToList();
+
+            if (livros.Any())
+            {
+                Console.WriteLine($"\n 🔎 Resultados para {termo} :");
+                foreach( var livro in livros)
+                {
+                    Console.WriteLine($" [ID]: {livro.Id} | [Título]: {livro.Title} | [ISBN]: {livro.Isbn}");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"\n [!] Nhnhum livro encontrado com o termo '{termo}'.");
+            }
+        }
+
+        public void TransferirLivrosEntreAutores(int idAntigo, int idNovo)
+        {
+            // validar se o autor novo existe
+            var autorNovo = _context.Authors.Find(idNovo);
+            if (autorNovo == null)
+            {
+                Console.WriteLine($"[ERROR]: o autor de destino {idNovo} não existe. ");
+                    return;
+            }
+
+            // Buscar todos os livros do autor antigo
+            var livrosParaMover = _context.Books
+                .Where(b => b.AuthorId == idAntigo)
+                .ToList();
+
+            if (!livrosParaMover.Any())
+            {
+                Console.WriteLine($"[AVISO]: O autor {idAntigo} não possui livros para transferir. ");
+                    return;
+            }
+
+            // Atualizar cada livro
+            foreach ( var livro in livrosParaMover)
+            {
+                livro.AuthorId = idNovo;
+            }
+
+            try
+            {
+                _context.SaveChanges();
+                Console.WriteLine($"\n [SUCESSO]: {livrosParaMover.Count} livros transferidos para {autorNovo.Name}!");
+            }
+
+            catch(Exception ex)
+            {
+                Console.WriteLine($"[ERROR]: Falha na transferência: {ex.Message}.");
+            }
+
+        }
+
+        public void BuscaAvancada(string? titulo, string? nomeAutor)
+        {
+            //Query aberta ( traz tudo )
+            IQueryable<Book> query = _context.Books.Include(b => b.Author);
+
+            // caso o usuário insira o título
+            if (!string.IsNullOrWhiteSpace(titulo))
+                query = query.Where(b => b.Title.Contains(titulo));
+
+            // Caso usuário digite o autor 
+            if (!string.IsNullOrWhiteSpace(nomeAutor))
+                query = query.Where(b => b.Author.Name.Contains(nomeAutor));
+
+            var resultado = query.ToList();
+
+            if (resultado.Any())
+            {
+                Console.WriteLine($"\n Encontrados exatamente {resultado.Count} livros: ");
+
+                foreach (var b in resultado)
+                    Console.WriteLine($"{b.Title} (Autor: {b.Author?.Name ?? "Sem autor"})");
+            }
+        }
+
+        public void ExportarParaTxt()
+        {
+            string caminhoArquivo = "RelatorioAcervo.txt";
+            var livros = _context.Books.Include(b => b.Author).ToList();
+
+            try
+            {
+                using (StreamWriter writer = new StreamWriter(caminhoArquivo))
+                {
+                    writer.WriteLine("====================================================");
+                    writer.WriteLine($"RELATÓRIO DE ACERVO - GERADO EM: {DateTime.Now}");
+                    writer.WriteLine("====================================================");
+                    writer.WriteLine(string.Format("{0,-30} | {1,-20} | {2,-15}", "TÍTULO", "AUTOR", "ISBN"));
+                    writer.WriteLine("----------------------------------------------------");
+
+                    foreach(var b in livros)
+                    {
+                        writer.WriteLine(string.Format("{0,-30} | {1,-20} | {2,-15}",
+                            b.Title.Length > 27 ? b.Title.Substring(0, 27) + "..." : b.Title,
+                            b.Author?.Name ?? "Sem autor",
+                            b.Isbn));
+                    }
+                }
+                Console.WriteLine($"\n [SUCESSO]: Relatório gerado em: {Path.GetFullPath(caminhoArquivo)}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR]: Falha ao gerar arquivo: {ex.Message}");
+            }
+        }        
     }
 }

@@ -4,9 +4,9 @@ namespace Library.Models
     {
         public int Id { get; set; }
 
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
-        public IList<Book> Books { get; set; } // Uma categoria tem vários livros
+        public IList<Book> Books { get; set; } = new List<Book>(); // Uma categoria tem vários livros
     }
 }
     

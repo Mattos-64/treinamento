@@ -1,0 +1,23 @@
+====================================================
+RELATÓRIO DE ACERVO - GERADO EM: 23/04/2026 13:55:14
+====================================================
+TÍTULO                         | AUTOR                | ISBN           
+----------------------------------------------------
+Clean Code                     | Robert C. Martin     | 9780132350884  
+The pragmatic Programmer       | Andrew Hunt          | 9780201616224  
+Os horrores de Cuthulu         | H.P Lovecraft        | 3265987410     
+O Hobbit                       | J.R.R. Tolkien       | 9788595084741  
+A Sociedade do Anel            | J.R.R. Tolkien       | 9788595084772  
+Eu, Robô                       | Isaac Asimov         | 9788576572007  
+Fundação                       | Isaac Asimov         | 9788576571062  
+1984                           | George Orwell        | 9788535914849  
+A Revolução dos Bichos         | George Orwell        | 9788535909555  
+Frankenstein                   | Mary Shelley         | 9788582850381  
+Assim Falou Zaratustra         | Friedrich Nietzsche  | 9788535920192  
+E Não Sobrou Nenhum            | Agatha Christie      | 9788525057044  
+Morte no Nilo                  | Agatha Christie      | 9788525433169  
+It: A Coisa                    | Stephen King         | 9788535924770  
+O Iluminado                    | Stephen King         | 9788535924787  
+Dom Casmurro                   | Machado de Assis     | 9788535914856  
+A Hora da Estrela              | Clarice Lispector    | 9788532527561  
+Arquitetura Limpa              | Robert Martin        | 9788550804606  
