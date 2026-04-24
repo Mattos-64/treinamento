@@ -1,10 +1,25 @@
-﻿using Library.Data;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Library.Data;
 using System.Linq;
 using System;
 using Library.Services;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Library.Models;
+using Library.Validators;
+using FluentValidation;
 
-var service = new LibraryService (new Library.Data.LibraryDataContext());
+var builder = Host.CreateApplicationBuilder(args);
+
+// Configurando os serviços no container 
+builder.Services.AddDbContext<LibraryDataContext>();
+builder.Services.AddTransient<LibraryService>();
+builder.Services.AddScoped<IValidator<Book>,BookValidator>();
+
+using IHost host = builder.Build();
+
+// Ao invés de dar new ... nós pedimos ao Host para nos dar uma instância pronta.
+var service = host.Services.GetRequiredService<LibraryService>();
 
 bool rodando = true;
 

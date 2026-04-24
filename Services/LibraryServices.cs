@@ -1,17 +1,21 @@
+using Library.Validators;
 using Library.Data;
 using Library.Models;
 using Microsoft.EntityFrameworkCore;
 using System.IO;
+using FluentValidation;
 
 namespace Library.Services
 {
     public class LibraryService
     {
         private readonly LibraryDataContext _context;
+        private readonly IValidator<Book> _validator;
 
-        public LibraryService(LibraryDataContext context)
+        public LibraryService(LibraryDataContext context, IValidator<Book> validator)
         {
             _context = context;
+            _validator = validator;
         }
 
         public void GerarRelatorioAcervo()
@@ -46,16 +50,32 @@ namespace Library.Services
 
         public void AdicionarNovoLivro(string titulo, string isbn, int autorid, List<string> nomescategorias)
         {
+            var NovoLivro = new Book
+            {
+                Title = titulo,
+                Isbn = isbn,
+                AuthorId = autorid,
+                PublishedDate = DateTime.Now,
+                Categories = new List<Category>()
+            };
+
+            //Usando o FluentValidation 
+            var resultado = _validator.Validate(NovoLivro);
+
+            if (!resultado.IsValid)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(" \n [ERROR DE VALIDAÇÃO]: ");
+
+                foreach (var erro in resultado.Errors)
+                {
+                    Console.WriteLine($"{erro.ErrorMessage} ");
+                }
+                Console.ResetColor();
+                return;
+            }
             try
             {
-                var NovoLivro = new Book
-                {
-                    Title = titulo,
-                    Isbn = isbn,
-                    AuthorId = autorid,
-                    PublishedDate = DateTime.Now
-                };
-
                 foreach (var nome in nomescategorias)
                 {
                     var cat = _context.Categories.FirstOrDefault(c => c.Name == nome)
@@ -66,7 +86,7 @@ namespace Library.Services
                 _context.Books.Add(NovoLivro);
                 _context.SaveChanges();
                 Console.WriteLine($"[SUCESSO]: '{titulo}' adicionado com sucesso !!");
-            }
+            }    
             catch (Exception ex)
             {
                 Console.WriteLine($"[ERROR]: {ex.Message}");
